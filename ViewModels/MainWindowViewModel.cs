@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls.Notifications;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using MqttDebugger.Models;
 using MqttDebugger.Views;
 using MQTTnet;
@@ -21,6 +22,7 @@ using System.Reactive.Linq;
 using System.Security;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MqttDebugger.ViewModels
 {
@@ -310,6 +312,32 @@ namespace MqttDebugger.ViewModels
             }
         }
 
+        /// <summary>
+        /// Wether the Log window should autoscroll.
+        /// </summary>
+        private bool autoscrollMessageLog = true;
+        public bool AutoscrollMessageLog
+        {
+            get => autoscrollMessageLog;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref autoscrollMessageLog, value);
+            }
+        }
+
+        /// <summary>
+        /// Indicates if the message log should be preserved when disconnecting from the server.
+        /// </summary>
+        private bool preserveMessageLog = false;
+        public bool PreserveMessageLog
+        {
+            get => preserveMessageLog;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref preserveMessageLog, value);
+            }
+        }
+
         // Create reactive commands.
         public ReactiveCommand<Unit, Unit> StartServerCommand { get; }
         public ReactiveCommand<Unit, Unit> StopServerCommand { get; }
@@ -318,17 +346,20 @@ namespace MqttDebugger.ViewModels
         public ReactiveCommand<Unit, Unit> ConnectToServerCommand { get; }
         public ReactiveCommand<Unit, Unit> SendMessageCommand { get; }
         public ReactiveCommand<Unit, Unit> ClearMessageLogCommand { get; }
-        
+        public ReactiveCommand<Unit, Unit> ToggleAutoscrollCommand { get; }
+        public ReactiveCommand<Unit, Unit> TogglePreserveLogCommand { get; }
+
 
         // For notification handling.
         private MainWindow _window;
         private IManagedNotificationManager _notificationManager;
 
-        // Create default instances of client and server
+        // Create default instances of client and server.
         private Server mqttServer = new Server();
         private Client mqttClient = new Client();
         private MqttMessageOptions mqttMessageOptions = new MqttMessageOptions();
 
+        // The actual client and server isnstances as provided in MQTTnet.
         private IMqttServer server;
         private IMqttClient client;
         private Thread listenForMessagesThread;
@@ -343,6 +374,8 @@ namespace MqttDebugger.ViewModels
             ConnectToServerCommand = ReactiveCommand.Create(ConnectToServer);
             SendMessageCommand = ReactiveCommand.Create(SendMessage);
             ClearMessageLogCommand = ReactiveCommand.Create(ClearMessageLog);
+            ToggleAutoscrollCommand = ReactiveCommand.Create(ToggleAutoscroll);
+            TogglePreserveLogCommand = ReactiveCommand.Create(TogglePreserveLog);
 
             // Copy references for window and notificationManager
             _notificationManager = notificationManager;
@@ -473,12 +506,14 @@ namespace MqttDebugger.ViewModels
         /// <summary>
         /// Restarts or Starts the MQTT-Server (depends on current state).
         /// </summary>
-        private void RestartServer()
+        private async void RestartServer()
         {
             if (server.IsStarted)
             {
                 NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Information", $"Restarting the server...", NotificationType.Information));
                 StopServer();
+                // Should be improved by making StopServer() awaitable.
+                await Task.Delay(300);
                 StartServer();
             }
             else
@@ -503,8 +538,11 @@ namespace MqttDebugger.ViewModels
                     ClientConnectionButtonText = "Connect";
                     IsConnectedToServer = false;
                     MqttMessageText = string.Empty;
-                    // One might also keep those message in the queue...
-                    ReceivedMessages = string.Empty;
+
+                    if (PreserveMessageLog == false)
+                    {
+                        ReceivedMessages = string.Empty;
+                    }
                 }
                 catch (Exception e)
                 {
@@ -588,6 +626,9 @@ namespace MqttDebugger.ViewModels
             }
         }
 
+        /// <summary>
+        /// Listen to incoming messages on the subscribed topics.
+        /// </summary>
         private async void ListenForMessages()
         {
             List<MqttTopicFilter> topicFilters = new List<MqttTopicFilter>();
@@ -604,10 +645,6 @@ namespace MqttDebugger.ViewModels
 
                 await client.SubscribeAsync(topicFilters.ToArray());
             }
-/*            else if (topicsAsString.Length == 1)
-            {
-                await client.SubscribeAsync(mqttMessageOptions.FilterByTopic);
-            }*/
             else
             {
                 NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Error", "Can not subscribe to chosen topic. Please change the topic in the general tab.", NotificationType.Error));
@@ -639,7 +676,12 @@ namespace MqttDebugger.ViewModels
                         }
                         ReceivedMessage += "\n";
                         ReceivedMessages += ReceivedMessage;
-                        //_window.ScrollTextToEnd(); // Does not work.
+                        if (AutoscrollMessageLog)
+                        {
+                            // A short timeout is needed, so that the scroll viewer will scroll to the new end of its content.
+                            Thread.Sleep(10);
+                            Dispatcher.UIThread.InvokeAsync(_window.ScrollTextToEnd);
+                        }
                     }
                 });
             }
@@ -655,9 +697,28 @@ namespace MqttDebugger.ViewModels
             StopServer();
         }
 
+        /// <summary>
+        /// Remove all past messages from the log window.
+        /// </summary>
         private void ClearMessageLog()
         {
             ReceivedMessages = string.Empty;
+        }
+
+        /// <summary>
+        /// Toggles autoscroll property of the message log.
+        /// </summary>
+        private void ToggleAutoscroll()
+        {
+            AutoscrollMessageLog = !AutoscrollMessageLog;
+        }
+
+        /// <summary>
+        /// Toggles the option to preserve the log (e.g. prevent the log window from being emptied when disconnecting).
+        /// </summary>
+        private void TogglePreserveLog()
+        {
+            PreserveMessageLog = !PreserveMessageLog;
         }
     }
 }

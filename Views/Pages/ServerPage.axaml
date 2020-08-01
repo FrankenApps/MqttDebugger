@@ -1,0 +1,64 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MqttDebugger.Views.Pages.ServerPage">
+  <DockPanel Margin="10,0,10,10">
+    <StackPanel Orientation="Vertical"
+                Spacing="8"
+                DockPanel.Dock="Top">
+
+      <TextBlock Text="Configure and control your MQTT-Server."></TextBlock>
+
+      <TextBlock Text="Username"
+                 Margin="0,10,0,0"></TextBlock>
+      <TextBox Watermark="Enter username(s) for server."
+               ToolTip.Tip="Separate different usernames with a &quot;;&quot; character."
+               Text="{Binding ServerUsernames}"></TextBox>
+      <TextBlock Text="Password"></TextBlock>
+      <TextBox Watermark="Enter password(s) for server."
+               ToolTip.Tip="Separate different passwords with a &quot;;&quot; character."
+               Text="{Binding ServerPasswords}"></TextBox>
+      <StackPanel Orientation="Horizontal"
+                  Spacing="0">
+        <TextBlock Text="Server Status: "></TextBlock>
+        <TextBlock Text="{Binding ServerStatusText}"
+                   FontWeight="SemiBold"
+                   Foreground="{Binding ServerStatusTextColor}"></TextBlock>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal"
+                  IsVisible="{Binding IsServerRunning}"
+                  Spacing="0">
+        <TextBlock Text="Connect from your local network using "></TextBlock>
+        <TextBlock Text="{Binding LocalIp}"
+                   Cursor="Hand"
+                   Foreground="Blue"
+                   TextDecorations="Underline"
+                   Name="LinkText"></TextBlock>
+        <TextBlock Text="."></TextBlock>
+      </StackPanel>
+    </StackPanel>
+    <DockPanel HorizontalAlignment="Stretch"
+               DockPanel.Dock="Bottom">
+      <Button DockPanel.Dock="Left"
+              VerticalAlignment="Bottom"
+              Margin="0,0,10,0"
+              Content="Reset Settings"
+              Command="{Binding ResetSettingsCommand}"
+              ToolTip.Tip="Reset settings for included server."></Button>
+      <StackPanel Orientation="Horizontal"
+                  DockPanel.Dock="Right"
+                  VerticalAlignment="Bottom"
+                  HorizontalAlignment="Right"
+                  Spacing="4">
+        <Button Content="Restart"
+                Command="{Binding RestartServerCommand}"></Button>
+        <Button Content="Stop"
+                Command="{Binding StopServerCommand}"></Button>
+        <Button Content="Start"
+                Command="{Binding StartServerCommand}"></Button>
+      </StackPanel>
+    </DockPanel>
+  </DockPanel>
+</UserControl>

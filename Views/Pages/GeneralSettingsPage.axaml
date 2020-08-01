@@ -1,0 +1,44 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MqttDebugger.Views.Pages.GeneralSettingsPage">
+  <ScrollViewer>
+    <StackPanel Margin="10,10,10,10"
+      Spacing="10">
+      <ToggleButton VerticalAlignment="Top"
+                    Name="DarkModeToggleButton"
+                    Content="Dark Theme"></ToggleButton>
+
+      <ToggleSwitch Content="Send Message Shortcut: "
+                    OnContent="Shift+Enter"
+                    OffContent="Enter"
+                    IsChecked="{Binding SendMessageShortcut}"></ToggleSwitch>
+
+      <StackPanel>
+        <TextBlock Text="Display Options:"></TextBlock>
+        <StackPanel Orientation="Horizontal"
+                    Spacing="8">
+          <CheckBox Content="Topic"
+                    IsChecked="{Binding MessageOptionShowTopic}"></CheckBox>
+          <CheckBox Content="Payload as Text"
+                    IsChecked="{Binding MessageOptionDisplayPayloadAsString}"></CheckBox>
+          <CheckBox Content="Save to File"
+                    Name="SaveToFileCheckBox"
+                    IsChecked="{Binding MessageOptionWritePayloadToFile}"></CheckBox>
+        </StackPanel>
+      </StackPanel>
+
+      <StackPanel>
+        <TextBlock Text="Subscribe to Topic:"></TextBlock>
+        <TextBox Text="{Binding FilterByTopic}"
+                 Name="TopicFilterTextBox"
+                 Watermark="This field should not be empty."
+                 MaxWidth="400"
+                 ToolTip.Tip="Enter &quot;#&quot; in order to subscribe to all topics except those that start with a &quot;$&quot;. Multiple Topics can be separated with a &quot;;&quot; character."></TextBox>
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

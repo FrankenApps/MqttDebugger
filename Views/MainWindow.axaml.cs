@@ -5,7 +5,9 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using MqttDebugger.ViewModels;
+using MqttDebugger.Views.Pages;
 using System.Diagnostics;
 using System.Windows.Input;
 
@@ -13,14 +15,9 @@ namespace MqttDebugger.Views
 {
     public class MainWindow : Window
     {
-        private WindowNotificationManager _notificationArea;
-        private ScrollViewer messageLogScrollViewer;
+        public WindowNotificationManager _notificationArea;
 
-        private TextBlock linkTextBlock;
-        private CheckBox saveToFileCheckBox;
-        private TextBox topicFilterTextBox;
-
-        private string topicBefore = "#";
+        private ClientPage clientPage;
 
         public MainWindow()
         {
@@ -34,68 +31,15 @@ namespace MqttDebugger.Views
 
             DataContext = new MainWindowViewModel(this, _notificationArea);
 
-            messageLogScrollViewer = this.FindControl<ScrollViewer>("MessageLogScrollViewer");
-            ScrollTextToEnd();
-
-            linkTextBlock = this.FindControl<TextBlock>("LinkText");
-            linkTextBlock.Tapped += OpenLink;
-
-            saveToFileCheckBox = this.FindControl<CheckBox>("SaveToFileCheckBox");
-            saveToFileCheckBox.Checked += SaveToFileCheckBox_Checked;
-
-            topicFilterTextBox = this.FindControl<TextBox>("TopicFilterTextBox");
-            topicFilterTextBox.GotFocus += TopicFilterTextBox_GotFocus;
-            topicFilterTextBox.LostFocus += TopicFilterTextBox_LostFocus;
+            clientPage = this.FindControl<ClientPage>("ClientPage");
         }
 
-        private void TopicFilterTextBox_GotFocus(object sender, GotFocusEventArgs e)
-        {
-            topicBefore = topicFilterTextBox.Text;
-        }
-
-        private void TopicFilterTextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (((MainWindowViewModel)DataContext).IsConnectedToServer)
-            {
-                if (topicFilterTextBox.Text != topicBefore)
-                {
-                    _notificationArea.Show(new Notification("Reload required.", "You will need to reconnect to the server, for that setting to become active.", NotificationType.Information));
-                }
-            }
-        }
-
-        private async void SaveToFileCheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            OpenFolderDialog dialog = new OpenFolderDialog();
-            dialog.Title = "Select a folder to output the payload to.";
-
-            string result = await dialog.ShowAsync(this);
-
-            if (result.Length > 0)
-            {
-                ((MainWindowViewModel)DataContext).FileOutputFolder = result;
-            }
-            else
-            {
-                _notificationArea.Show(new Notification("Error", "An output folder is required to write the payload to files.", NotificationType.Error));
-                saveToFileCheckBox.IsChecked = false;
-            }
-        }
-
-        private void OpenLink(object sender, RoutedEventArgs e)
-        {
-            TextBlock urlTextBlock = (TextBlock)sender;
-            ProcessStartInfo psi = new ProcessStartInfo
-            {
-                FileName = $"http://{urlTextBlock.Text}",
-                UseShellExecute = true
-            };
-            Process.Start(psi);
-        }
-
+        /// <summary>
+        /// Routes the ScrollToEnd call from the ViewModel to the corresponding page (UserControl).
+        /// </summary>
         public void ScrollTextToEnd()
         {
-            messageLogScrollViewer.ScrollToEnd();
+            clientPage.ScrollTextToEnd();
         }
 
         private void InitializeComponent()

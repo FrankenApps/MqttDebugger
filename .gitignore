@@ -9,6 +9,9 @@
 *.VC.VC.opendb
 *.sln
 
+# Exclude Visual Studio Code user options.
+.vscode/ 
+
 # Exclude StyleCop cache files.
 [Ss]tyle[Cc]op.[Cc]ache
 

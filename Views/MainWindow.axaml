@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:converters="clr-namespace:MqttDebugger.Views.ValueConverters;assembly=MqttDebugger"
+        xmlns:pages="clr-namespace:MqttDebugger.Views.Pages;assembly=MqttDebugger"
         mc:Ignorable="d"
         Width="420"
         Height="400"
@@ -10,219 +10,17 @@
         Icon="/Assets/Images/logo.ico"
         Title="Mqtt Debugger"
         WindowStartupLocation="CenterScreen">
-
-  <Window.Resources>
-    <converters:BooleanToKeyboardShortcutConverter x:Key="BooleanToKeyboardShortcutConverter"></converters:BooleanToKeyboardShortcutConverter>
-  </Window.Resources>
   
   <Panel VerticalAlignment="Stretch">
     <TabControl TabStripPlacement="Top">
       <TabItem Header="Server">
-        <DockPanel Margin="10,0,10,10">
-          <StackPanel Orientation="Vertical"
-                      Spacing="8"
-                      DockPanel.Dock="Top">
-
-            <TextBlock Text="Configure and control your MQTT-Server."></TextBlock>
-
-            <TextBlock Text="Username"
-                       Margin="0,10,0,0"></TextBlock>
-            <TextBox Watermark="Enter username(s) for server."
-                     ToolTip.Tip="Separate different usernames with a &quot;;&quot; character."
-                     Text="{Binding ServerUsernames}"></TextBox>
-            <TextBlock Text="Password"></TextBlock>
-            <TextBox Watermark="Enter password(s) for server."
-                     ToolTip.Tip="Separate different passwords with a &quot;;&quot; character."
-                     Text="{Binding ServerPasswords}"></TextBox>
-            <StackPanel Orientation="Horizontal"
-                        Spacing="0">
-              <TextBlock Text="Server Status: "></TextBlock>
-              <TextBlock Text="{Binding ServerStatusText}"
-                         FontWeight="SemiBold"
-                         Foreground="{Binding ServerStatusTextColor}"></TextBlock>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal"
-                        IsVisible="{Binding IsServerRunning}"
-                        Spacing="0">
-              <TextBlock Text="Connect from your local network using "></TextBlock>
-              <TextBlock Text="{Binding LocalIp}"
-                         Cursor="Hand"
-                         Foreground="Blue"
-                         TextDecorations="Underline"
-                         Name="LinkText"></TextBlock>
-              <TextBlock Text="."></TextBlock>
-            </StackPanel>
-          </StackPanel>
-          <DockPanel HorizontalAlignment="Stretch"
-                     DockPanel.Dock="Bottom">
-            <Button DockPanel.Dock="Left"
-                    VerticalAlignment="Bottom"
-                    Margin="0,0,10,0"
-                    Content="Reset Settings"
-                    Command="{Binding ResetSettingsCommand}"
-                    ToolTip.Tip="Reset settings for included server."></Button>
-            <StackPanel Orientation="Horizontal"
-                        DockPanel.Dock="Right"
-                        VerticalAlignment="Bottom"
-                        HorizontalAlignment="Right"
-                        Spacing="4">
-              <Button Content="Restart"
-                      Command="{Binding RestartServerCommand}"></Button>
-              <Button Content="Stop"
-                      Command="{Binding StopServerCommand}"></Button>
-              <Button Content="Start"
-                      Command="{Binding StartServerCommand}"></Button>
-            </StackPanel>
-          </DockPanel>
-        </DockPanel>
+        <pages:ServerPage></pages:ServerPage>
       </TabItem>
       <TabItem Header="Client">
-        <DockPanel Margin="10,0,10,10">
-          <StackPanel Orientation="Vertical"
-                      Spacing="8"
-                      DockPanel.Dock="Top"
-                      IsVisible="{Binding !IsConnectedToServer}">
-
-            <TextBlock Text="Connnect to a MQTT-Server."></TextBlock>
-
-            <TextBlock Text="Server"
-                       Margin="0,10,0,0"></TextBlock>
-            <TextBox Watermark="Enter ip and port of server."
-                     Text="{Binding ClientHostname}"
-                     IsEnabled="{Binding !ConnectToInternalServer}"
-                     ToolTip.Tip="Leave blank for &quot;localhost:1883&quot;."></TextBox>
-            <TextBlock Text="Username"></TextBlock>
-            <TextBox Watermark="Enter username for server."
-                     Text="{Binding ClientUsername}"
-                     IsEnabled="{Binding !ConnectToInternalServer}"></TextBox>
-            <TextBlock Text="Password"></TextBlock>
-            <TextBox Watermark="Enter password for server."
-                     Text="{Binding ClientPassword}"
-                     IsEnabled="{Binding !ConnectToInternalServer}"></TextBox>
-            <ToggleSwitch Content="Connect to internal Server: " 
-                          OnContent="" 
-                          OffContent=""
-                          IsChecked="{Binding ConnectToInternalServer}"></ToggleSwitch>
-          </StackPanel>
-          
-          <DockPanel HorizontalAlignment="Stretch"
-                     DockPanel.Dock="Bottom">
-            <TextBlock DockPanel.Dock="Left"
-                       VerticalAlignment="Center"
-                       Margin="0,0,10,0"
-                       Text="{Binding ClientStatusText}"></TextBlock>
-            <StackPanel Orientation="Horizontal"
-                        DockPanel.Dock="Right"
-                        Spacing="6"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Right">
-              <ToggleButton Content="Show Topic"
-                            IsVisible="{Binding IsConnectedToServer}"
-                            IsChecked="{Binding ShowTopicSelector}"></ToggleButton>
-              <Button Content="{Binding ClientConnectionButtonText}"
-                      Command="{Binding ConnectToServerCommand}"></Button>
-            </StackPanel>
-          </DockPanel>
-
-          <DockPanel DockPanel.Dock="Bottom"
-                     VerticalAlignment="Stretch"
-                     HorizontalAlignment="Stretch"
-                     IsVisible="{Binding IsConnectedToServer}"
-                     Margin="0,0,0,15">
-
-            <DockPanel VerticalAlignment="Bottom"
-                       HorizontalAlignment="Stretch"
-                       DockPanel.Dock="Bottom"
-                       IsVisible="{Binding ShowTopicSelector}">
-              <TextBox DockPanel.Dock="Top"
-                       Text="{Binding ClientTopic}"
-                       AcceptsReturn="False">
-              </TextBox>
-            </DockPanel>
-            
-            <DockPanel VerticalAlignment="Bottom"
-                       HorizontalAlignment="Stretch"
-                       DockPanel.Dock="Bottom">
-              <Button DockPanel.Dock="Right"
-                      Content="Send"
-                      Margin="10,0,0,0"
-                      Command="{Binding SendMessageCommand}"></Button>
-              <TextBox DockPanel.Dock="Top"
-                       Text="{Binding MqttMessageText}"
-                       AcceptsReturn="{Binding SendMessageShortcut}">
-                <TextBox.KeyBindings>
-                  <KeyBinding Command="{Binding SendMessageCommand}"
-                              Gesture="{Binding SendMessageShortcut, Converter={StaticResource BooleanToKeyboardShortcutConverter}}}">
-                  </KeyBinding>
-                </TextBox.KeyBindings>
-              </TextBox>
-            </DockPanel>
-            
-            <ScrollViewer VerticalScrollBarVisibility="Auto"
-                          AllowAutoHide="True"
-                          Name="MessageLogScrollViewer">
-              <TextBlock HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch"
-                         Background="Transparent"
-                         TextWrapping="NoWrap"
-                         Text="{Binding ReceivedMessages}">
-                <TextBlock.ContextMenu>
-                  <ContextMenu>
-                    <MenuItem Header="Clear"
-                              InputGesture="SHIFT+DELETE"
-                              Command="{Binding ClearMessageLogCommand}"/>
-                    <MenuItem Header="Autoscroll"
-                              InputGesture="CTRL+A">
-                      <MenuItem.Icon>
-                        <CheckBox BorderThickness="0" IsHitTestVisible="True" IsChecked="True"/>
-                      </MenuItem.Icon>
-                    </MenuItem>
-                  </ContextMenu>
-                </TextBlock.ContextMenu>
-              </TextBlock>
-            </ScrollViewer>
-          </DockPanel>
-          
-        </DockPanel>
+        <pages:ClientPage Name="ClientPage"></pages:ClientPage>  
       </TabItem>
       <TabItem Header="General">
-        <ScrollViewer>
-          <StackPanel Margin="10,10,10,10"
-            Spacing="10">
-            <ToggleButton VerticalAlignment="Top"
-                          IsChecked="{Binding DarkMode}"
-                          Content="Dark Theme"></ToggleButton>
-            
-            <ToggleSwitch Content="Send Message Shortcut: "
-                          OnContent="Shift+Enter"
-                          OffContent="Enter"
-                          IsChecked="{Binding SendMessageShortcut}"></ToggleSwitch>
-            
-            <StackPanel>
-              <TextBlock Text="Display Options:"></TextBlock>
-                <StackPanel Orientation="Horizontal"
-                            Spacing="8">
-                  <CheckBox Content="Topic"
-                            IsChecked="{Binding MessageOptionShowTopic}"></CheckBox>
-                  <CheckBox Content="Payload as Text"
-                            IsChecked="{Binding MessageOptionDisplayPayloadAsString}"></CheckBox>
-                  <CheckBox Content="Save to File"
-                            Name="SaveToFileCheckBox"
-                            IsChecked="{Binding MessageOptionWritePayloadToFile}"></CheckBox>
-                </StackPanel>
-            </StackPanel>
-
-            <StackPanel>
-              <TextBlock Text="Subscribe to Topic:"></TextBlock>
-              <TextBox Text="{Binding FilterByTopic}"
-                       Name="TopicFilterTextBox"
-                       Watermark="This field should not be empty."
-                       MaxWidth="400"
-                       ToolTip.Tip="Enter &quot;#&quot; in order to subscribe to all topics except those that start with a &quot;$&quot;. Multiple Topics can be separated with a &quot;;&quot; character."></TextBox>
-            </StackPanel>
-            
-          </StackPanel>
-        </ScrollViewer>
+        <pages:GeneralSettingsPage></pages:GeneralSettingsPage>
       </TabItem>
     </TabControl>
   </Panel>

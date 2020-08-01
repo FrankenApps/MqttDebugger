@@ -1,0 +1,157 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:MqttDebugger.Views.ValueConverters;assembly=MqttDebugger"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MqttDebugger.Views.Pages.ClientPage">
+
+  <UserControl.Resources>
+    <converters:BooleanToKeyboardShortcutConverter x:Key="BooleanToKeyboardShortcutConverter"></converters:BooleanToKeyboardShortcutConverter>
+  </UserControl.Resources>
+
+  <DockPanel Margin="10,0,10,10">
+    <StackPanel Orientation="Vertical"
+                      Spacing="8"
+                      DockPanel.Dock="Top"
+                      IsVisible="{Binding !IsConnectedToServer}">
+
+      <TextBlock Text="Connnect to a MQTT-Server."></TextBlock>
+
+      <TextBlock Text="Server"
+                 Margin="0,10,0,0"></TextBlock>
+      <TextBox Watermark="Enter ip and port of server."
+               Text="{Binding ClientHostname}"
+               IsEnabled="{Binding !ConnectToInternalServer}"
+               ToolTip.Tip="Leave blank for &quot;localhost:1883&quot;."></TextBox>
+      <TextBlock Text="Username"></TextBlock>
+      <TextBox Watermark="Enter username for server."
+               Text="{Binding ClientUsername}"
+               IsEnabled="{Binding !ConnectToInternalServer}"></TextBox>
+      <TextBlock Text="Password"></TextBlock>
+      <TextBox Watermark="Enter password for server."
+               Text="{Binding ClientPassword}"
+               IsEnabled="{Binding !ConnectToInternalServer}"></TextBox>
+      <ToggleSwitch Content="Connect to internal Server: "
+                    OnContent=""
+                    OffContent=""
+                    IsChecked="{Binding ConnectToInternalServer}"></ToggleSwitch>
+    </StackPanel>
+
+    <DockPanel HorizontalAlignment="Stretch"
+               DockPanel.Dock="Bottom">
+      <TextBlock DockPanel.Dock="Left"
+                 VerticalAlignment="Center"
+                 Margin="0,0,10,0"
+                 Text="{Binding ClientStatusText}"></TextBlock>
+      <StackPanel Orientation="Horizontal"
+                  DockPanel.Dock="Right"
+                  Spacing="6"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Right">
+        <ToggleButton Content="Send to Topic"
+                      IsVisible="{Binding IsConnectedToServer}"
+                      IsChecked="{Binding ShowTopicSelector}"></ToggleButton>
+        <Button Content="{Binding ClientConnectionButtonText}"
+                Command="{Binding ConnectToServerCommand}"></Button>
+      </StackPanel>
+    </DockPanel>
+
+    <Grid DockPanel.Dock="Bottom"
+          VerticalAlignment="Stretch"
+          HorizontalAlignment="Stretch"
+          IsVisible="{Binding IsConnectedToServer}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"></RowDefinition>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"></ColumnDefinition>
+      </Grid.ColumnDefinitions>
+
+      <Image VerticalAlignment="Top"
+             HorizontalAlignment="Right"
+             ZIndex="2"
+             Width="45"
+             Height="45"
+             Name="OpenPlotWindow">
+        <Image.Styles>
+          <Style Selector="Image:pointerover">
+            <Setter Property="Source" Value="/Assets/Images/plot_window-hovered.png"/>
+          </Style>
+          <Style Selector="Image:not(:pointerover)">
+            <Setter Property="Source" Value="/Assets/Images/plot_window.png"/>
+          </Style>
+        </Image.Styles>
+      </Image>
+
+      <DockPanel VerticalAlignment="Stretch"
+                 HorizontalAlignment="Stretch"
+                 Margin="0,0,0,15"
+                 ZIndex="1">
+
+        <DockPanel VerticalAlignment="Bottom"
+                   HorizontalAlignment="Stretch"
+                   DockPanel.Dock="Bottom"
+                   IsVisible="{Binding ShowTopicSelector}">
+          <TextBox DockPanel.Dock="Top"
+                   Text="{Binding ClientTopic}"
+                   AcceptsReturn="False">
+          </TextBox>
+        </DockPanel>
+
+        <DockPanel VerticalAlignment="Bottom"
+                   HorizontalAlignment="Stretch"
+                   DockPanel.Dock="Bottom">
+          <Button DockPanel.Dock="Right"
+                  Content="Send"
+                  Margin="10,0,0,0"
+                  Command="{Binding SendMessageCommand}"></Button>
+          <TextBox DockPanel.Dock="Top"
+                   Text="{Binding MqttMessageText}"
+                   AcceptsReturn="{Binding SendMessageShortcut}">
+            <TextBox.KeyBindings>
+              <KeyBinding Command="{Binding SendMessageCommand}"
+                          Gesture="{Binding SendMessageShortcut, Converter={StaticResource BooleanToKeyboardShortcutConverter}}}">
+              </KeyBinding>
+            </TextBox.KeyBindings>
+          </TextBox>
+        </DockPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      AllowAutoHide="True"
+                      Name="MessageLogScrollViewer">
+          <TextBlock HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch"
+                     Background="Transparent"
+                     TextWrapping="NoWrap"
+                     Text="{Binding ReceivedMessages}">
+            <TextBlock.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="Clear"
+                          InputGesture="SHIFT+DELETE"
+                          Command="{Binding ClearMessageLogCommand}"/>
+                <MenuItem Header="Autoscroll"
+                          Command="{Binding ToggleAutoscrollCommand}"
+                          InputGesture="CTRL+A">
+                  <MenuItem.Icon>
+                    <CheckBox BorderThickness="0" IsHitTestVisible="False" IsChecked="{Binding AutoscrollMessageLog}"/>
+                  </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Preserve Log"
+                          Command="{Binding TogglePreserveLogCommand}">
+                  <MenuItem.Icon>
+                    <CheckBox BorderThickness="0" IsHitTestVisible="False" IsChecked="{Binding PreserveMessageLog}"/>
+                  </MenuItem.Icon>
+                </MenuItem>
+              </ContextMenu>
+            </TextBlock.ContextMenu>
+          </TextBlock>
+        </ScrollViewer>
+      </DockPanel>
+
+    </Grid>
+
+
+
+  </DockPanel>
+</UserControl>
