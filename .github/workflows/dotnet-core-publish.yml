@@ -57,7 +57,7 @@ jobs:
     - name: Upload macos 64bit standalone executable
       uses: actions/upload-artifact@v2
       with:
-        name: mqttDebugger-macx64-standalone.exe
+        name: mqttDebugger-macx64-standalone
         path: bin/release/netcoreapp3.1/osx.10.15-x64/publish/MqttDebugger-Standalone
     - name: Build and Publish Project framework dependent version
       run:  dotnet publish -c Release --runtime osx.10.15-x64 -p:PublishReadyToRun=true -p:PublishSingleFile=true --no-self-contained
@@ -93,7 +93,7 @@ jobs:
     - name: Upload linux 64bit standalone executable
       uses: actions/upload-artifact@v2
       with:
-        name: mqttDebugger-linux-x64-standalone.exe
+        name: mqttDebugger-linux-x64-standalone
         path: /home/runner/work/MqttDebugger/MqttDebugger/bin/Release/netcoreapp3.1/linux-x64/publish/MqttDebugger-Standalone
     - name: Build and Publish Project framework dependent version
       run:  dotnet publish -c Release --runtime linux-x64 -p:PublishReadyToRun=true -p:PublishSingleFile=true --no-self-contained
